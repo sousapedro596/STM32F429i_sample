@@ -1,0 +1,1549 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"stm32f429i_discovery_sdram.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.SDRAM_GPIOConfig,"ax",%progbits
+  21              		.align	2
+  22              		.p2align 4,,15
+  23              		.global	SDRAM_GPIOConfig
+  24              		.thumb
+  25              		.thumb_func
+  27              	SDRAM_GPIOConfig:
+  28              	.LFB113:
+  29              		.file 1 "stm32f429i_discovery_sdram.c"
+   1:stm32f429i_discovery_sdram.c **** /**
+   2:stm32f429i_discovery_sdram.c ****   ******************************************************************************
+   3:stm32f429i_discovery_sdram.c ****   * @file    stm32f429i_discovery_sdram.c
+   4:stm32f429i_discovery_sdram.c ****   * @author  MCD Application Team
+   5:stm32f429i_discovery_sdram.c ****   * @version V1.0.1
+   6:stm32f429i_discovery_sdram.c ****   * @date    28-October-2013
+   7:stm32f429i_discovery_sdram.c ****   * @brief   This file provides a set of functions needed to drive the
+   8:stm32f429i_discovery_sdram.c ****   *          IS42S16400J SDRAM memory mounted on STM32F429I-DISCO Kit.    
+   9:stm32f429i_discovery_sdram.c ****   ******************************************************************************
+  10:stm32f429i_discovery_sdram.c ****   * @attention
+  11:stm32f429i_discovery_sdram.c ****   *
+  12:stm32f429i_discovery_sdram.c ****   * <h2><center>&copy; COPYRIGHT 2013 STMicroelectronics</center></h2>
+  13:stm32f429i_discovery_sdram.c ****   *
+  14:stm32f429i_discovery_sdram.c ****   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+  15:stm32f429i_discovery_sdram.c ****   * You may not use this file except in compliance with the License.
+  16:stm32f429i_discovery_sdram.c ****   * You may obtain a copy of the License at:
+  17:stm32f429i_discovery_sdram.c ****   *
+  18:stm32f429i_discovery_sdram.c ****   *        http://www.st.com/software_license_agreement_liberty_v2
+  19:stm32f429i_discovery_sdram.c ****   *
+  20:stm32f429i_discovery_sdram.c ****   * Unless required by applicable law or agreed to in writing, software 
+  21:stm32f429i_discovery_sdram.c ****   * distributed under the License is distributed on an "AS IS" BASIS, 
+  22:stm32f429i_discovery_sdram.c ****   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  23:stm32f429i_discovery_sdram.c ****   * See the License for the specific language governing permissions and
+  24:stm32f429i_discovery_sdram.c ****   * limitations under the License.
+  25:stm32f429i_discovery_sdram.c ****   *
+  26:stm32f429i_discovery_sdram.c ****   ******************************************************************************
+  27:stm32f429i_discovery_sdram.c ****   */
+  28:stm32f429i_discovery_sdram.c **** 
+  29:stm32f429i_discovery_sdram.c **** /* Includes ------------------------------------------------------------------*/
+  30:stm32f429i_discovery_sdram.c **** #include "stm32f429i_discovery_sdram.h"
+  31:stm32f429i_discovery_sdram.c **** #include "stm32f4xx_fmc.h"
+  32:stm32f429i_discovery_sdram.c **** /** @addtogroup Utilities
+  33:stm32f429i_discovery_sdram.c ****   * @{
+  34:stm32f429i_discovery_sdram.c ****   */ 
+  35:stm32f429i_discovery_sdram.c **** 
+  36:stm32f429i_discovery_sdram.c **** /** @addtogroup STM32F4_DISCOVERY
+  37:stm32f429i_discovery_sdram.c ****   * @{
+  38:stm32f429i_discovery_sdram.c ****   */ 
+  39:stm32f429i_discovery_sdram.c **** 
+  40:stm32f429i_discovery_sdram.c **** /** @addtogroup STM32429I_DISCO
+  41:stm32f429i_discovery_sdram.c ****   * @{
+  42:stm32f429i_discovery_sdram.c ****   */
+  43:stm32f429i_discovery_sdram.c ****   
+  44:stm32f429i_discovery_sdram.c **** /** @addtogroup STM32429I_DISCO_SDRAM
+  45:stm32f429i_discovery_sdram.c ****   * @brief     This file provides a set of functions needed to drive the 
+  46:stm32f429i_discovery_sdram.c ****   *            IS42S16400J SDRAM memory mounted on STM32429I-DISCO board.
+  47:stm32f429i_discovery_sdram.c ****   * @{
+  48:stm32f429i_discovery_sdram.c ****   */ 
+  49:stm32f429i_discovery_sdram.c **** 
+  50:stm32f429i_discovery_sdram.c **** /** @defgroup STM32429I_DISCO_SDRAM_Private_Functions
+  51:stm32f429i_discovery_sdram.c ****   * @{
+  52:stm32f429i_discovery_sdram.c ****   */
+  53:stm32f429i_discovery_sdram.c **** 
+  54:stm32f429i_discovery_sdram.c **** #ifndef USE_Delay
+  55:stm32f429i_discovery_sdram.c **** static void delay(__IO uint32_t nCount);
+  56:stm32f429i_discovery_sdram.c **** #endif /* USE_Delay*/
+  57:stm32f429i_discovery_sdram.c **** 
+  58:stm32f429i_discovery_sdram.c **** /**
+  59:stm32f429i_discovery_sdram.c ****   * @brief  Configures the FMC and GPIOs to interface with the SDRAM memory.
+  60:stm32f429i_discovery_sdram.c ****   *         This function must be called before any read/write operation
+  61:stm32f429i_discovery_sdram.c ****   *         on the SDRAM.
+  62:stm32f429i_discovery_sdram.c ****   * @param  None
+  63:stm32f429i_discovery_sdram.c ****   * @retval None
+  64:stm32f429i_discovery_sdram.c ****   */
+  65:stm32f429i_discovery_sdram.c **** void SDRAM_Init(void)
+  66:stm32f429i_discovery_sdram.c **** {
+  67:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitTypeDef  FMC_SDRAMInitStructure;
+  68:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitTypeDef  FMC_SDRAMTimingInitStructure; 
+  69:stm32f429i_discovery_sdram.c ****   
+  70:stm32f429i_discovery_sdram.c ****   /* GPIO configuration for FMC SDRAM bank */
+  71:stm32f429i_discovery_sdram.c ****   SDRAM_GPIOConfig();
+  72:stm32f429i_discovery_sdram.c ****   
+  73:stm32f429i_discovery_sdram.c ****   /* Enable FMC clock */
+  74:stm32f429i_discovery_sdram.c ****   RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FMC, ENABLE);
+  75:stm32f429i_discovery_sdram.c ****  
+  76:stm32f429i_discovery_sdram.c **** /* FMC Configuration ---------------------------------------------------------*/
+  77:stm32f429i_discovery_sdram.c **** /* FMC SDRAM Bank configuration */   
+  78:stm32f429i_discovery_sdram.c ****   /* Timing configuration for 90 Mhz of SD clock frequency (180Mhz/2) */
+  79:stm32f429i_discovery_sdram.c ****   /* TMRD: 2 Clock cycles */
+  80:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay    = 2;      
+  81:stm32f429i_discovery_sdram.c ****   /* TXSR: min=70ns (7x11.11ns) */
+  82:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_ExitSelfRefreshDelay = 7;
+  83:stm32f429i_discovery_sdram.c ****   /* TRAS: min=42ns (4x11.11ns) max=120k (ns) */
+  84:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime      = 4;
+  85:stm32f429i_discovery_sdram.c ****   /* TRC:  min=70 (7x11.11ns) */        
+  86:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay        = 7;         
+  87:stm32f429i_discovery_sdram.c ****   /* TWR:  min=1+ 7ns (1+1x11.11ns) */
+  88:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime    = 2;      
+  89:stm32f429i_discovery_sdram.c ****   /* TRP:  20ns => 2x11.11ns */
+  90:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_RPDelay              = 2;                
+  91:stm32f429i_discovery_sdram.c ****   /* TRCD: 20ns => 2x11.11ns */
+  92:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_RCDDelay             = 2;
+  93:stm32f429i_discovery_sdram.c **** 
+  94:stm32f429i_discovery_sdram.c **** /* FMC SDRAM control configuration */
+  95:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_Bank = FMC_Bank2_SDRAM;
+  96:stm32f429i_discovery_sdram.c ****   /* Row addressing: [7:0] */
+  97:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ColumnBitsNumber = FMC_ColumnBits_Number_8b;
+  98:stm32f429i_discovery_sdram.c ****   /* Column addressing: [11:0] */
+  99:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_RowBitsNumber = FMC_RowBits_Number_12b;
+ 100:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDMemoryDataWidth = SDRAM_MEMORY_WIDTH;
+ 101:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_InternalBankNumber = FMC_InternalBank_Number_4;
+ 102:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_CASLatency = SDRAM_CAS_LATENCY; 
+ 103:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_WriteProtection = FMC_Write_Protection_Disable;
+ 104:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDClockPeriod = SDCLOCK_PERIOD;  
+ 105:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ReadBurst = SDRAM_READBURST;
+ 106:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ReadPipeDelay = FMC_ReadPipe_Delay_1;
+ 107:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDRAMTimingStruct = &FMC_SDRAMTimingInitStructure;
+ 108:stm32f429i_discovery_sdram.c ****   
+ 109:stm32f429i_discovery_sdram.c ****   /* FMC SDRAM bank initialization */
+ 110:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInit(&FMC_SDRAMInitStructure); 
+ 111:stm32f429i_discovery_sdram.c ****   
+ 112:stm32f429i_discovery_sdram.c ****   /* FMC SDRAM device initialization sequence */
+ 113:stm32f429i_discovery_sdram.c ****   SDRAM_InitSequence(); 
+ 114:stm32f429i_discovery_sdram.c ****   
+ 115:stm32f429i_discovery_sdram.c **** }
+ 116:stm32f429i_discovery_sdram.c **** 
+ 117:stm32f429i_discovery_sdram.c **** /**
+ 118:stm32f429i_discovery_sdram.c ****   * @brief  Configures all SDRAM memory I/Os pins. 
+ 119:stm32f429i_discovery_sdram.c ****   * @param  None. 
+ 120:stm32f429i_discovery_sdram.c ****   * @retval None.
+ 121:stm32f429i_discovery_sdram.c ****   */
+ 122:stm32f429i_discovery_sdram.c **** void SDRAM_GPIOConfig(void)
+ 123:stm32f429i_discovery_sdram.c **** {
+  30              		.loc 1 123 0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 8
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 28
+  37              		.cfi_offset 4, -28
+  38              		.cfi_offset 5, -24
+  39              		.cfi_offset 6, -20
+  40              		.cfi_offset 7, -16
+  41              		.cfi_offset 8, -12
+  42              		.cfi_offset 9, -8
+  43              		.cfi_offset 14, -4
+ 124:stm32f429i_discovery_sdram.c ****   GPIO_InitTypeDef GPIO_InitStructure;
+ 125:stm32f429i_discovery_sdram.c ****   
+ 126:stm32f429i_discovery_sdram.c ****   /* Enable GPIOs clock */
+ 127:stm32f429i_discovery_sdram.c ****   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
+ 128:stm32f429i_discovery_sdram.c ****                          RCC_AHB1Periph_GPIOE | RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_GPIOG, ENABLE
+ 129:stm32f429i_discovery_sdram.c ****                             
+ 130:stm32f429i_discovery_sdram.c **** /*-- GPIOs Configuration -----------------------------------------------------*/
+ 131:stm32f429i_discovery_sdram.c **** /*
+ 132:stm32f429i_discovery_sdram.c ****  +-------------------+--------------------+--------------------+--------------------+
+ 133:stm32f429i_discovery_sdram.c ****  +                       SDRAM pins assignment                                      +
+ 134:stm32f429i_discovery_sdram.c ****  +-------------------+--------------------+--------------------+--------------------+
+ 135:stm32f429i_discovery_sdram.c ****  | PD0  <-> FMC_D2   | PE0  <-> FMC_NBL0  | PF0  <-> FMC_A0    | PG0  <-> FMC_A10   |
+ 136:stm32f429i_discovery_sdram.c ****  | PD1  <-> FMC_D3   | PE1  <-> FMC_NBL1  | PF1  <-> FMC_A1    | PG1  <-> FMC_A11   |
+ 137:stm32f429i_discovery_sdram.c ****  | PD8  <-> FMC_D13  | PE7  <-> FMC_D4    | PF2  <-> FMC_A2    | PG8  <-> FMC_SDCLK |
+ 138:stm32f429i_discovery_sdram.c ****  | PD9  <-> FMC_D14  | PE8  <-> FMC_D5    | PF3  <-> FMC_A3    | PG15 <-> FMC_NCAS  |
+ 139:stm32f429i_discovery_sdram.c ****  | PD10 <-> FMC_D15  | PE9  <-> FMC_D6    | PF4  <-> FMC_A4    |--------------------+ 
+ 140:stm32f429i_discovery_sdram.c ****  | PD14 <-> FMC_D0   | PE10 <-> FMC_D7    | PF5  <-> FMC_A5    |   
+ 141:stm32f429i_discovery_sdram.c ****  | PD15 <-> FMC_D1   | PE11 <-> FMC_D8    | PF11 <-> FMC_NRAS  | 
+ 142:stm32f429i_discovery_sdram.c ****  +-------------------| PE12 <-> FMC_D9    | PF12 <-> FMC_A6    | 
+ 143:stm32f429i_discovery_sdram.c ****                      | PE13 <-> FMC_D10   | PF13 <-> FMC_A7    |    
+ 144:stm32f429i_discovery_sdram.c ****                      | PE14 <-> FMC_D11   | PF14 <-> FMC_A8    |
+ 145:stm32f429i_discovery_sdram.c ****                      | PE15 <-> FMC_D12   | PF15 <-> FMC_A9    |
+ 146:stm32f429i_discovery_sdram.c ****  +-------------------+--------------------+--------------------+
+ 147:stm32f429i_discovery_sdram.c ****  | PB5 <-> FMC_SDCKE1| 
+ 148:stm32f429i_discovery_sdram.c ****  | PB6 <-> FMC_SDNE1 | 
+ 149:stm32f429i_discovery_sdram.c ****  | PC0 <-> FMC_SDNWE |
+ 150:stm32f429i_discovery_sdram.c ****  +-------------------+  
+ 151:stm32f429i_discovery_sdram.c ****   
+ 152:stm32f429i_discovery_sdram.c **** */
+ 153:stm32f429i_discovery_sdram.c ****   
+ 154:stm32f429i_discovery_sdram.c ****   /* Common GPIO configuration */
+ 155:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+ 156:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+ 157:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+ 158:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+ 159:stm32f429i_discovery_sdram.c **** 
+ 160:stm32f429i_discovery_sdram.c ****   /* GPIOB configuration */
+ 161:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOB, GPIO_PinSource5 , GPIO_AF_FMC);
+  44              		.loc 1 161 0
+  45 0004 4FF48064 		mov	r4, #1024
+ 123:stm32f429i_discovery_sdram.c **** {
+  46              		.loc 1 123 0
+  47 0008 83B0     		sub	sp, sp, #12
+  48              	.LCFI1:
+  49              		.cfi_def_cfa_offset 40
+  50              		.loc 1 161 0
+  51 000a C4F20204 		movt	r4, 16386
+ 127:stm32f429i_discovery_sdram.c ****   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
+  52              		.loc 1 127 0
+  53 000e 7E20     		movs	r0, #126
+  54 0010 0121     		movs	r1, #1
+  55 0012 FFF7FEFF 		bl	RCC_AHB1PeriphClockCmd
+  56              	.LVL0:
+ 157:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  57              		.loc 1 157 0
+  58 0016 0027     		movs	r7, #0
+ 155:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+  59              		.loc 1 155 0
+  60 0018 4FF00209 		mov	r9, #2
+  61              		.loc 1 161 0
+  62 001c 0521     		movs	r1, #5
+  63 001e 0C22     		movs	r2, #12
+  64 0020 2046     		mov	r0, r4
+ 162:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOB, GPIO_PinSource6 , GPIO_AF_FMC);
+ 163:stm32f429i_discovery_sdram.c ****   
+ 164:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;;      
+  65              		.loc 1 164 0
+  66 0022 02AE     		add	r6, sp, #8
+ 155:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+  67              		.loc 1 155 0
+  68 0024 8DF80490 		strb	r9, [sp, #4]
+ 156:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  69              		.loc 1 156 0
+  70 0028 8DF80590 		strb	r9, [sp, #5]
+ 157:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  71              		.loc 1 157 0
+  72 002c 8DF80670 		strb	r7, [sp, #6]
+ 158:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+  73              		.loc 1 158 0
+  74 0030 8DF80770 		strb	r7, [sp, #7]
+ 165:stm32f429i_discovery_sdram.c **** 
+ 166:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOB, &GPIO_InitStructure);  
+ 167:stm32f429i_discovery_sdram.c **** 
+ 168:stm32f429i_discovery_sdram.c ****   /* GPIOC configuration */
+ 169:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOC, GPIO_PinSource0 , GPIO_AF_FMC);
+  75              		.loc 1 169 0
+  76 0034 4FF40065 		mov	r5, #2048
+ 161:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOB, GPIO_PinSource5 , GPIO_AF_FMC);
+  77              		.loc 1 161 0
+  78 0038 FFF7FEFF 		bl	GPIO_PinAFConfig
+  79              	.LVL1:
+ 162:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOB, GPIO_PinSource6 , GPIO_AF_FMC);
+  80              		.loc 1 162 0
+  81 003c 0C22     		movs	r2, #12
+  82 003e 2046     		mov	r0, r4
+  83 0040 0621     		movs	r1, #6
+  84 0042 FFF7FEFF 		bl	GPIO_PinAFConfig
+  85              	.LVL2:
+  86              		.loc 1 169 0
+  87 0046 C4F20205 		movt	r5, 16386
+ 164:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;;      
+  88              		.loc 1 164 0
+  89 004a 6023     		movs	r3, #96
+ 166:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOB, &GPIO_InitStructure);  
+  90              		.loc 1 166 0
+  91 004c 2046     		mov	r0, r4
+  92 004e 6946     		mov	r1, sp
+ 164:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;;      
+  93              		.loc 1 164 0
+  94 0050 46F8083D 		str	r3, [r6, #-8]!
+ 170:stm32f429i_discovery_sdram.c ****   
+ 171:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;      
+ 172:stm32f429i_discovery_sdram.c **** 
+ 173:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOC, &GPIO_InitStructure);  
+ 174:stm32f429i_discovery_sdram.c ****   
+ 175:stm32f429i_discovery_sdram.c ****   /* GPIOD configuration */
+ 176:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_FMC);
+  95              		.loc 1 176 0
+  96 0054 4FF44064 		mov	r4, #3072
+ 166:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOB, &GPIO_InitStructure);  
+  97              		.loc 1 166 0
+  98 0058 FFF7FEFF 		bl	GPIO_Init
+  99              	.LVL3:
+ 169:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOC, GPIO_PinSource0 , GPIO_AF_FMC);
+ 100              		.loc 1 169 0
+ 101 005c 0C22     		movs	r2, #12
+ 102 005e 2846     		mov	r0, r5
+ 103 0060 3946     		mov	r1, r7
+ 104              		.loc 1 176 0
+ 105 0062 C4F20204 		movt	r4, 16386
+ 169:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOC, GPIO_PinSource0 , GPIO_AF_FMC);
+ 106              		.loc 1 169 0
+ 107 0066 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 108              	.LVL4:
+ 171:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;      
+ 109              		.loc 1 171 0
+ 110 006a 4FF00108 		mov	r8, #1
+ 173:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOC, &GPIO_InitStructure);  
+ 111              		.loc 1 173 0
+ 112 006e 2846     		mov	r0, r5
+ 113 0070 6946     		mov	r1, sp
+ 171:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;      
+ 114              		.loc 1 171 0
+ 115 0072 CDF80080 		str	r8, [sp, #0]
+ 173:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOC, &GPIO_InitStructure);  
+ 116              		.loc 1 173 0
+ 117 0076 FFF7FEFF 		bl	GPIO_Init
+ 118              	.LVL5:
+ 119              		.loc 1 176 0
+ 120 007a 0C22     		movs	r2, #12
+ 121 007c 2046     		mov	r0, r4
+ 122 007e 3946     		mov	r1, r7
+ 123 0080 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 124              	.LVL6:
+ 177:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_FMC);
+ 125              		.loc 1 177 0
+ 126 0084 2046     		mov	r0, r4
+ 127 0086 4146     		mov	r1, r8
+ 128 0088 0C22     		movs	r2, #12
+ 129 008a FFF7FEFF 		bl	GPIO_PinAFConfig
+ 130              	.LVL7:
+ 178:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_FMC);
+ 131              		.loc 1 178 0
+ 132 008e 2046     		mov	r0, r4
+ 133 0090 0821     		movs	r1, #8
+ 134 0092 0C22     		movs	r2, #12
+ 135 0094 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 136              	.LVL8:
+ 179:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_FMC);
+ 137              		.loc 1 179 0
+ 138 0098 2046     		mov	r0, r4
+ 139 009a 0921     		movs	r1, #9
+ 140 009c 0C22     		movs	r2, #12
+ 141 009e FFF7FEFF 		bl	GPIO_PinAFConfig
+ 142              	.LVL9:
+ 180:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource10, GPIO_AF_FMC);
+ 143              		.loc 1 180 0
+ 144 00a2 2046     		mov	r0, r4
+ 145 00a4 0A21     		movs	r1, #10
+ 146 00a6 0C22     		movs	r2, #12
+ 147 00a8 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 148              	.LVL10:
+ 181:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource14, GPIO_AF_FMC);
+ 149              		.loc 1 181 0
+ 150 00ac 2046     		mov	r0, r4
+ 151 00ae 0E21     		movs	r1, #14
+ 152 00b0 0C22     		movs	r2, #12
+ 153 00b2 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 154              	.LVL11:
+ 182:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource15, GPIO_AF_FMC);
+ 183:stm32f429i_discovery_sdram.c **** 
+ 184:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1  | GPIO_Pin_8 |
+ 185:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 |
+ 186:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_15;
+ 187:stm32f429i_discovery_sdram.c **** 
+ 188:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOD, &GPIO_InitStructure);
+ 189:stm32f429i_discovery_sdram.c **** 
+ 190:stm32f429i_discovery_sdram.c ****   /* GPIOE configuration */
+ 191:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource0 , GPIO_AF_FMC);
+ 155              		.loc 1 191 0
+ 156 00b6 4FF48055 		mov	r5, #4096
+ 182:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOD, GPIO_PinSource15, GPIO_AF_FMC);
+ 157              		.loc 1 182 0
+ 158 00ba 2046     		mov	r0, r4
+ 159 00bc 0C22     		movs	r2, #12
+ 160 00be 0F21     		movs	r1, #15
+ 161 00c0 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 162              	.LVL12:
+ 163              		.loc 1 191 0
+ 164 00c4 C4F20205 		movt	r5, 16386
+ 188:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOD, &GPIO_InitStructure);
+ 165              		.loc 1 188 0
+ 166 00c8 2046     		mov	r0, r4
+ 167 00ca 6946     		mov	r1, sp
+ 184:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1  | GPIO_Pin_8 |
+ 168              		.loc 1 184 0
+ 169 00cc 4CF20372 		movw	r2, #50947
+ 170 00d0 0092     		str	r2, [sp, #0]
+ 188:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOD, &GPIO_InitStructure);
+ 171              		.loc 1 188 0
+ 172 00d2 FFF7FEFF 		bl	GPIO_Init
+ 173              	.LVL13:
+ 174              		.loc 1 191 0
+ 175 00d6 0C22     		movs	r2, #12
+ 176 00d8 2846     		mov	r0, r5
+ 177 00da 3946     		mov	r1, r7
+ 178 00dc FFF7FEFF 		bl	GPIO_PinAFConfig
+ 179              	.LVL14:
+ 192:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource1 , GPIO_AF_FMC);
+ 180              		.loc 1 192 0
+ 181 00e0 2846     		mov	r0, r5
+ 182 00e2 4146     		mov	r1, r8
+ 183 00e4 0C22     		movs	r2, #12
+ 184 00e6 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 185              	.LVL15:
+ 193:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource7 , GPIO_AF_FMC);
+ 186              		.loc 1 193 0
+ 187 00ea 2846     		mov	r0, r5
+ 188 00ec 0721     		movs	r1, #7
+ 189 00ee 0C22     		movs	r2, #12
+ 190 00f0 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 191              	.LVL16:
+ 194:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource8 , GPIO_AF_FMC);
+ 192              		.loc 1 194 0
+ 193 00f4 2846     		mov	r0, r5
+ 194 00f6 0821     		movs	r1, #8
+ 195 00f8 0C22     		movs	r2, #12
+ 196 00fa FFF7FEFF 		bl	GPIO_PinAFConfig
+ 197              	.LVL17:
+ 195:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource9 , GPIO_AF_FMC);
+ 198              		.loc 1 195 0
+ 199 00fe 2846     		mov	r0, r5
+ 200 0100 0921     		movs	r1, #9
+ 201 0102 0C22     		movs	r2, #12
+ 202 0104 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 203              	.LVL18:
+ 196:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource10 , GPIO_AF_FMC);
+ 204              		.loc 1 196 0
+ 205 0108 2846     		mov	r0, r5
+ 206 010a 0A21     		movs	r1, #10
+ 207 010c 0C22     		movs	r2, #12
+ 208 010e FFF7FEFF 		bl	GPIO_PinAFConfig
+ 209              	.LVL19:
+ 197:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource11 , GPIO_AF_FMC);
+ 210              		.loc 1 197 0
+ 211 0112 2846     		mov	r0, r5
+ 212 0114 0B21     		movs	r1, #11
+ 213 0116 0C22     		movs	r2, #12
+ 214 0118 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 215              	.LVL20:
+ 198:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource12 , GPIO_AF_FMC);
+ 216              		.loc 1 198 0
+ 217 011c 0C21     		movs	r1, #12
+ 218 011e 2846     		mov	r0, r5
+ 219 0120 0A46     		mov	r2, r1
+ 220 0122 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 221              	.LVL21:
+ 199:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource13 , GPIO_AF_FMC);
+ 222              		.loc 1 199 0
+ 223 0126 2846     		mov	r0, r5
+ 224 0128 0D21     		movs	r1, #13
+ 225 012a 0C22     		movs	r2, #12
+ 226 012c FFF7FEFF 		bl	GPIO_PinAFConfig
+ 227              	.LVL22:
+ 200:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource14 , GPIO_AF_FMC);
+ 228              		.loc 1 200 0
+ 229 0130 2846     		mov	r0, r5
+ 230 0132 0E21     		movs	r1, #14
+ 231 0134 0C22     		movs	r2, #12
+ 232 0136 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 233              	.LVL23:
+ 201:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource15 , GPIO_AF_FMC);
+ 202:stm32f429i_discovery_sdram.c **** 
+ 203:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1  | GPIO_Pin_7 |
+ 204:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_8  | GPIO_Pin_9  | GPIO_Pin_10 |
+ 205:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 |
+ 206:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_14 | GPIO_Pin_15;
+ 207:stm32f429i_discovery_sdram.c **** 
+ 208:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOE, &GPIO_InitStructure);
+ 209:stm32f429i_discovery_sdram.c **** 
+ 210:stm32f429i_discovery_sdram.c ****   /* GPIOF configuration */
+ 211:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource0 , GPIO_AF_FMC);
+ 234              		.loc 1 211 0
+ 235 013a 4FF4A054 		mov	r4, #5120
+ 201:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource15 , GPIO_AF_FMC);
+ 236              		.loc 1 201 0
+ 237 013e 2846     		mov	r0, r5
+ 238 0140 0C22     		movs	r2, #12
+ 239 0142 0F21     		movs	r1, #15
+ 240              		.loc 1 211 0
+ 241 0144 C4F20204 		movt	r4, 16386
+ 201:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOE, GPIO_PinSource15 , GPIO_AF_FMC);
+ 242              		.loc 1 201 0
+ 243 0148 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 244              	.LVL24:
+ 203:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1  | GPIO_Pin_7 |
+ 245              		.loc 1 203 0
+ 246 014c 4FF68373 		movw	r3, #65411
+ 208:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOE, &GPIO_InitStructure);
+ 247              		.loc 1 208 0
+ 248 0150 2846     		mov	r0, r5
+ 249 0152 6946     		mov	r1, sp
+ 203:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1  | GPIO_Pin_7 |
+ 250              		.loc 1 203 0
+ 251 0154 0093     		str	r3, [sp, #0]
+ 208:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOE, &GPIO_InitStructure);
+ 252              		.loc 1 208 0
+ 253 0156 FFF7FEFF 		bl	GPIO_Init
+ 254              	.LVL25:
+ 255              		.loc 1 211 0
+ 256 015a 0C22     		movs	r2, #12
+ 257 015c 2046     		mov	r0, r4
+ 258 015e 3946     		mov	r1, r7
+ 259 0160 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 260              	.LVL26:
+ 212:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource1 , GPIO_AF_FMC);
+ 261              		.loc 1 212 0
+ 262 0164 2046     		mov	r0, r4
+ 263 0166 4146     		mov	r1, r8
+ 264 0168 0C22     		movs	r2, #12
+ 265 016a FFF7FEFF 		bl	GPIO_PinAFConfig
+ 266              	.LVL27:
+ 213:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource2 , GPIO_AF_FMC);
+ 267              		.loc 1 213 0
+ 268 016e 2046     		mov	r0, r4
+ 269 0170 4946     		mov	r1, r9
+ 270 0172 0C22     		movs	r2, #12
+ 271 0174 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 272              	.LVL28:
+ 214:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource3 , GPIO_AF_FMC);
+ 273              		.loc 1 214 0
+ 274 0178 2046     		mov	r0, r4
+ 275 017a 0321     		movs	r1, #3
+ 276 017c 0C22     		movs	r2, #12
+ 277 017e FFF7FEFF 		bl	GPIO_PinAFConfig
+ 278              	.LVL29:
+ 215:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource4 , GPIO_AF_FMC);
+ 279              		.loc 1 215 0
+ 280 0182 2046     		mov	r0, r4
+ 281 0184 0421     		movs	r1, #4
+ 282 0186 0C22     		movs	r2, #12
+ 283 0188 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 284              	.LVL30:
+ 216:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource5 , GPIO_AF_FMC);
+ 285              		.loc 1 216 0
+ 286 018c 2046     		mov	r0, r4
+ 287 018e 0521     		movs	r1, #5
+ 288 0190 0C22     		movs	r2, #12
+ 289 0192 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 290              	.LVL31:
+ 217:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource11 , GPIO_AF_FMC);
+ 291              		.loc 1 217 0
+ 292 0196 2046     		mov	r0, r4
+ 293 0198 0B21     		movs	r1, #11
+ 294 019a 0C22     		movs	r2, #12
+ 295 019c FFF7FEFF 		bl	GPIO_PinAFConfig
+ 296              	.LVL32:
+ 218:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource12 , GPIO_AF_FMC);
+ 297              		.loc 1 218 0
+ 298 01a0 0C21     		movs	r1, #12
+ 299 01a2 2046     		mov	r0, r4
+ 300 01a4 0A46     		mov	r2, r1
+ 301 01a6 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 302              	.LVL33:
+ 219:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource13 , GPIO_AF_FMC);
+ 303              		.loc 1 219 0
+ 304 01aa 2046     		mov	r0, r4
+ 305 01ac 0D21     		movs	r1, #13
+ 306 01ae 0C22     		movs	r2, #12
+ 307 01b0 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 308              	.LVL34:
+ 220:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource14 , GPIO_AF_FMC);
+ 309              		.loc 1 220 0
+ 310 01b4 2046     		mov	r0, r4
+ 311 01b6 0E21     		movs	r1, #14
+ 312 01b8 0C22     		movs	r2, #12
+ 313 01ba FFF7FEFF 		bl	GPIO_PinAFConfig
+ 314              	.LVL35:
+ 221:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource15 , GPIO_AF_FMC);
+ 222:stm32f429i_discovery_sdram.c **** 
+ 223:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1 | GPIO_Pin_2 | 
+ 224:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_3  | GPIO_Pin_4 | GPIO_Pin_5 |
+ 225:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 |
+ 226:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_14 | GPIO_Pin_15;      
+ 227:stm32f429i_discovery_sdram.c **** 
+ 228:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOF, &GPIO_InitStructure);
+ 229:stm32f429i_discovery_sdram.c **** 
+ 230:stm32f429i_discovery_sdram.c ****   /* GPIOG configuration */
+ 231:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOG, GPIO_PinSource0 , GPIO_AF_FMC);
+ 315              		.loc 1 231 0
+ 316 01be 4FF4C055 		mov	r5, #6144
+ 221:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource15 , GPIO_AF_FMC);
+ 317              		.loc 1 221 0
+ 318 01c2 2046     		mov	r0, r4
+ 319 01c4 0C22     		movs	r2, #12
+ 320 01c6 0F21     		movs	r1, #15
+ 321              		.loc 1 231 0
+ 322 01c8 C4F20205 		movt	r5, 16386
+ 221:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOF, GPIO_PinSource15 , GPIO_AF_FMC);
+ 323              		.loc 1 221 0
+ 324 01cc FFF7FEFF 		bl	GPIO_PinAFConfig
+ 325              	.LVL36:
+ 228:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOF, &GPIO_InitStructure);
+ 326              		.loc 1 228 0
+ 327 01d0 2046     		mov	r0, r4
+ 328 01d2 6946     		mov	r1, sp
+ 223:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1 | GPIO_Pin_2 | 
+ 329              		.loc 1 223 0
+ 330 01d4 4FF63F02 		movw	r2, #63551
+ 331 01d8 0092     		str	r2, [sp, #0]
+ 228:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOF, &GPIO_InitStructure);
+ 332              		.loc 1 228 0
+ 333 01da FFF7FEFF 		bl	GPIO_Init
+ 334              	.LVL37:
+ 335              		.loc 1 231 0
+ 336 01de 0C22     		movs	r2, #12
+ 337 01e0 2846     		mov	r0, r5
+ 338 01e2 3946     		mov	r1, r7
+ 339 01e4 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 340              	.LVL38:
+ 232:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOG, GPIO_PinSource1 , GPIO_AF_FMC);
+ 341              		.loc 1 232 0
+ 342 01e8 2846     		mov	r0, r5
+ 343 01ea 4146     		mov	r1, r8
+ 344 01ec 0C22     		movs	r2, #12
+ 345 01ee FFF7FEFF 		bl	GPIO_PinAFConfig
+ 346              	.LVL39:
+ 233:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOG, GPIO_PinSource4 , GPIO_AF_FMC);
+ 347              		.loc 1 233 0
+ 348 01f2 2846     		mov	r0, r5
+ 349 01f4 0421     		movs	r1, #4
+ 350 01f6 0C22     		movs	r2, #12
+ 351 01f8 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 352              	.LVL40:
+ 234:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOG, GPIO_PinSource5 , GPIO_AF_FMC);
+ 353              		.loc 1 234 0
+ 354 01fc 2846     		mov	r0, r5
+ 355 01fe 0521     		movs	r1, #5
+ 356 0200 0C22     		movs	r2, #12
+ 357 0202 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 358              	.LVL41:
+ 235:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOG, GPIO_PinSource8 , GPIO_AF_FMC);
+ 359              		.loc 1 235 0
+ 360 0206 2846     		mov	r0, r5
+ 361 0208 0821     		movs	r1, #8
+ 362 020a 0C22     		movs	r2, #12
+ 363 020c FFF7FEFF 		bl	GPIO_PinAFConfig
+ 364              	.LVL42:
+ 236:stm32f429i_discovery_sdram.c ****   GPIO_PinAFConfig(GPIOG, GPIO_PinSource15 , GPIO_AF_FMC);
+ 365              		.loc 1 236 0
+ 366 0210 2846     		mov	r0, r5
+ 367 0212 0F21     		movs	r1, #15
+ 368 0214 0C22     		movs	r2, #12
+ 369 0216 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 370              	.LVL43:
+ 237:stm32f429i_discovery_sdram.c ****   
+ 238:stm32f429i_discovery_sdram.c **** 
+ 239:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 |
+ 371              		.loc 1 239 0
+ 372 021a 48F23313 		movw	r3, #33075
+ 240:stm32f429i_discovery_sdram.c ****                                 GPIO_Pin_5 | GPIO_Pin_8 | GPIO_Pin_15;
+ 241:stm32f429i_discovery_sdram.c **** 
+ 242:stm32f429i_discovery_sdram.c ****   GPIO_Init(GPIOG, &GPIO_InitStructure);    
+ 373              		.loc 1 242 0
+ 374 021e 2846     		mov	r0, r5
+ 375 0220 6946     		mov	r1, sp
+ 239:stm32f429i_discovery_sdram.c ****   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 |
+ 376              		.loc 1 239 0
+ 377 0222 0093     		str	r3, [sp, #0]
+ 378              		.loc 1 242 0
+ 379 0224 FFF7FEFF 		bl	GPIO_Init
+ 380              	.LVL44:
+ 243:stm32f429i_discovery_sdram.c **** }
+ 381              		.loc 1 243 0
+ 382 0228 03B0     		add	sp, sp, #12
+ 383 022a BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 384              		.cfi_endproc
+ 385              	.LFE113:
+ 387 022e 00BF     		.section	.text.SDRAM_InitSequence,"ax",%progbits
+ 388              		.align	2
+ 389              		.p2align 4,,15
+ 390              		.global	SDRAM_InitSequence
+ 391              		.thumb
+ 392              		.thumb_func
+ 394              	SDRAM_InitSequence:
+ 395              	.LFB114:
+ 244:stm32f429i_discovery_sdram.c **** 
+ 245:stm32f429i_discovery_sdram.c **** /**
+ 246:stm32f429i_discovery_sdram.c ****   * @brief  Executes the SDRAM memory initialization sequence. 
+ 247:stm32f429i_discovery_sdram.c ****   * @param  None. 
+ 248:stm32f429i_discovery_sdram.c ****   * @retval None.
+ 249:stm32f429i_discovery_sdram.c ****   */
+ 250:stm32f429i_discovery_sdram.c **** void SDRAM_InitSequence(void)
+ 251:stm32f429i_discovery_sdram.c **** {
+ 396              		.loc 1 251 0
+ 397              		.cfi_startproc
+ 398              		@ args = 0, pretend = 0, frame = 24
+ 399              		@ frame_needed = 0, uses_anonymous_args = 0
+ 400              	.LVL45:
+ 401 0000 10B5     		push	{r4, lr}
+ 402              	.LCFI2:
+ 403              		.cfi_def_cfa_offset 8
+ 404              		.cfi_offset 4, -8
+ 405              		.cfi_offset 14, -4
+ 406 0002 86B0     		sub	sp, sp, #24
+ 407              	.LCFI3:
+ 408              		.cfi_def_cfa_offset 32
+ 252:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandTypeDef FMC_SDRAMCommandStructure;
+ 253:stm32f429i_discovery_sdram.c ****   uint32_t tmpr = 0;
+ 254:stm32f429i_discovery_sdram.c ****   
+ 255:stm32f429i_discovery_sdram.c **** /* Step 3 --------------------------------------------------------------------*/
+ 256:stm32f429i_discovery_sdram.c ****   /* Configure a clock configuration enable command */
+ 257:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_CLK_Enabled;
+ 409              		.loc 1 257 0
+ 410 0004 0123     		movs	r3, #1
+ 258:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 411              		.loc 1 258 0
+ 412 0006 0822     		movs	r2, #8
+ 259:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 260:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+ 413              		.loc 1 260 0
+ 414 0008 0020     		movs	r0, #0
+ 257:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_CLK_Enabled;
+ 415              		.loc 1 257 0
+ 416 000a 0293     		str	r3, [sp, #8]
+ 258:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 417              		.loc 1 258 0
+ 418 000c 0392     		str	r2, [sp, #12]
+ 259:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 419              		.loc 1 259 0
+ 420 000e 0493     		str	r3, [sp, #16]
+ 421              		.loc 1 260 0
+ 422 0010 0590     		str	r0, [sp, #20]
+ 423              	.L3:
+ 261:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 262:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 424              		.loc 1 262 0 discriminator 1
+ 425 0012 0120     		movs	r0, #1
+ 426 0014 2021     		movs	r1, #32
+ 427 0016 FFF7FEFF 		bl	FMC_GetFlagStatus
+ 428              	.LVL46:
+ 429 001a 0446     		mov	r4, r0
+ 430 001c 0028     		cmp	r0, #0
+ 431 001e F8D1     		bne	.L3
+ 263:stm32f429i_discovery_sdram.c ****   {
+ 264:stm32f429i_discovery_sdram.c ****   }
+ 265:stm32f429i_discovery_sdram.c ****   /* Send the command */
+ 266:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);  
+ 432              		.loc 1 266 0
+ 433 0020 02A8     		add	r0, sp, #8
+ 434 0022 FFF7FEFF 		bl	FMC_SDRAMCmdConfig
+ 435              	.LVL47:
+ 436              	.LBB4:
+ 437              	.LBB5:
+ 267:stm32f429i_discovery_sdram.c ****   
+ 268:stm32f429i_discovery_sdram.c **** /* Step 4 --------------------------------------------------------------------*/
+ 269:stm32f429i_discovery_sdram.c ****   /* Insert 100 ms delay */
+ 270:stm32f429i_discovery_sdram.c ****   __Delay(10);
+ 271:stm32f429i_discovery_sdram.c ****     
+ 272:stm32f429i_discovery_sdram.c **** /* Step 5 --------------------------------------------------------------------*/
+ 273:stm32f429i_discovery_sdram.c ****   /* Configure a PALL (precharge all) command */ 
+ 274:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_PALL;
+ 275:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 276:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 277:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+ 278:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 279:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 280:stm32f429i_discovery_sdram.c ****   {
+ 281:stm32f429i_discovery_sdram.c ****   }
+ 282:stm32f429i_discovery_sdram.c ****   /* Send the command */
+ 283:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 284:stm32f429i_discovery_sdram.c ****   
+ 285:stm32f429i_discovery_sdram.c **** /* Step 6 --------------------------------------------------------------------*/
+ 286:stm32f429i_discovery_sdram.c ****   /* Configure a Auto-Refresh command */ 
+ 287:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_AutoRefresh;
+ 288:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 289:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 4;
+ 290:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+ 291:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 292:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 293:stm32f429i_discovery_sdram.c ****   {
+ 294:stm32f429i_discovery_sdram.c ****   }
+ 295:stm32f429i_discovery_sdram.c ****   /* Send the  first command */
+ 296:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 297:stm32f429i_discovery_sdram.c ****   
+ 298:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 299:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 300:stm32f429i_discovery_sdram.c ****   {
+ 301:stm32f429i_discovery_sdram.c ****   }
+ 302:stm32f429i_discovery_sdram.c ****   /* Send the second command */
+ 303:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 304:stm32f429i_discovery_sdram.c ****   
+ 305:stm32f429i_discovery_sdram.c **** /* Step 7 --------------------------------------------------------------------*/
+ 306:stm32f429i_discovery_sdram.c ****   /* Program the external memory mode register */
+ 307:stm32f429i_discovery_sdram.c ****   tmpr = (uint32_t)SDRAM_MODEREG_BURST_LENGTH_2          |
+ 308:stm32f429i_discovery_sdram.c ****                    SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL   |
+ 309:stm32f429i_discovery_sdram.c ****                    SDRAM_MODEREG_CAS_LATENCY_3           |
+ 310:stm32f429i_discovery_sdram.c ****                    SDRAM_MODEREG_OPERATING_MODE_STANDARD |
+ 311:stm32f429i_discovery_sdram.c ****                    SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
+ 312:stm32f429i_discovery_sdram.c ****   
+ 313:stm32f429i_discovery_sdram.c ****   /* Configure a load Mode register command*/ 
+ 314:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_LoadMode;
+ 315:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 316:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 317:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
+ 318:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 319:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 320:stm32f429i_discovery_sdram.c ****   {
+ 321:stm32f429i_discovery_sdram.c ****   }
+ 322:stm32f429i_discovery_sdram.c ****   /* Send the command */
+ 323:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 324:stm32f429i_discovery_sdram.c ****   
+ 325:stm32f429i_discovery_sdram.c **** /* Step 8 --------------------------------------------------------------------*/
+ 326:stm32f429i_discovery_sdram.c **** 
+ 327:stm32f429i_discovery_sdram.c ****   /* Set the refresh rate counter */
+ 328:stm32f429i_discovery_sdram.c ****   /* (15.62 us x Freq) - 20 */
+ 329:stm32f429i_discovery_sdram.c ****   /* Set the device refresh counter */
+ 330:stm32f429i_discovery_sdram.c ****   FMC_SetRefreshCount(1386);
+ 331:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 332:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 333:stm32f429i_discovery_sdram.c ****   {
+ 334:stm32f429i_discovery_sdram.c ****   }
+ 335:stm32f429i_discovery_sdram.c **** }
+ 336:stm32f429i_discovery_sdram.c **** 
+ 337:stm32f429i_discovery_sdram.c **** 
+ 338:stm32f429i_discovery_sdram.c **** /**
+ 339:stm32f429i_discovery_sdram.c ****   * @brief  Writes a Entire-word buffer to the SDRAM memory. 
+ 340:stm32f429i_discovery_sdram.c ****   * @param  pBuffer: pointer to buffer. 
+ 341:stm32f429i_discovery_sdram.c ****   * @param  uwWriteAddress: SDRAM memory internal address from which the data will be 
+ 342:stm32f429i_discovery_sdram.c ****   *         written.
+ 343:stm32f429i_discovery_sdram.c ****   * @param  uwBufferSize: number of words to write. 
+ 344:stm32f429i_discovery_sdram.c ****   * @retval None.
+ 345:stm32f429i_discovery_sdram.c ****   */
+ 346:stm32f429i_discovery_sdram.c **** void SDRAM_WriteBuffer(uint32_t* pBuffer, uint32_t uwWriteAddress, uint32_t uwBufferSize)
+ 347:stm32f429i_discovery_sdram.c **** {
+ 348:stm32f429i_discovery_sdram.c ****   __IO uint32_t write_pointer = (uint32_t)uwWriteAddress;
+ 349:stm32f429i_discovery_sdram.c **** 
+ 350:stm32f429i_discovery_sdram.c ****   /* Disable write protection */
+ 351:stm32f429i_discovery_sdram.c ****   FMC_SDRAMWriteProtectionConfig(FMC_Bank2_SDRAM, DISABLE);
+ 352:stm32f429i_discovery_sdram.c ****   
+ 353:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 354:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 355:stm32f429i_discovery_sdram.c ****   {
+ 356:stm32f429i_discovery_sdram.c ****   }
+ 357:stm32f429i_discovery_sdram.c **** 
+ 358:stm32f429i_discovery_sdram.c ****   /* While there is data to write */
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 360:stm32f429i_discovery_sdram.c ****   {
+ 361:stm32f429i_discovery_sdram.c ****     /* Transfer data to the memory */
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 363:stm32f429i_discovery_sdram.c **** 
+ 364:stm32f429i_discovery_sdram.c ****     /* Increment the address*/
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 366:stm32f429i_discovery_sdram.c ****   }
+ 367:stm32f429i_discovery_sdram.c ****     
+ 368:stm32f429i_discovery_sdram.c **** }
+ 369:stm32f429i_discovery_sdram.c **** 
+ 370:stm32f429i_discovery_sdram.c **** /**
+ 371:stm32f429i_discovery_sdram.c ****   * @brief  Reads data buffer from the SDRAM memory. 
+ 372:stm32f429i_discovery_sdram.c ****   * @param  pBuffer: pointer to buffer. 
+ 373:stm32f429i_discovery_sdram.c ****   * @param  ReadAddress: SDRAM memory internal address from which the data will be 
+ 374:stm32f429i_discovery_sdram.c ****   *         read.
+ 375:stm32f429i_discovery_sdram.c ****   * @param  uwBufferSize: number of words to write. 
+ 376:stm32f429i_discovery_sdram.c ****   * @retval None.
+ 377:stm32f429i_discovery_sdram.c ****   */
+ 378:stm32f429i_discovery_sdram.c **** void SDRAM_ReadBuffer(uint32_t* pBuffer, uint32_t uwReadAddress, uint32_t uwBufferSize)
+ 379:stm32f429i_discovery_sdram.c **** {
+ 380:stm32f429i_discovery_sdram.c ****   __IO uint32_t write_pointer = (uint32_t)uwReadAddress;
+ 381:stm32f429i_discovery_sdram.c ****   
+ 382:stm32f429i_discovery_sdram.c ****    
+ 383:stm32f429i_discovery_sdram.c ****   /* Wait until the SDRAM controller is ready */ 
+ 384:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 385:stm32f429i_discovery_sdram.c ****   {
+ 386:stm32f429i_discovery_sdram.c ****   }
+ 387:stm32f429i_discovery_sdram.c ****   
+ 388:stm32f429i_discovery_sdram.c ****   /* Read data */
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 390:stm32f429i_discovery_sdram.c ****   {
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 392:stm32f429i_discovery_sdram.c ****     
+ 393:stm32f429i_discovery_sdram.c ****    /* Increment the address*/
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 395:stm32f429i_discovery_sdram.c ****   } 
+ 396:stm32f429i_discovery_sdram.c **** }
+ 397:stm32f429i_discovery_sdram.c **** 
+ 398:stm32f429i_discovery_sdram.c **** #ifndef USE_Delay
+ 399:stm32f429i_discovery_sdram.c **** /**
+ 400:stm32f429i_discovery_sdram.c ****   * @brief  Inserts a delay time.
+ 401:stm32f429i_discovery_sdram.c ****   * @param  nCount: specifies the delay time length.
+ 402:stm32f429i_discovery_sdram.c ****   * @retval None
+ 403:stm32f429i_discovery_sdram.c ****   */
+ 404:stm32f429i_discovery_sdram.c **** static void delay(__IO uint32_t nCount)
+ 405:stm32f429i_discovery_sdram.c **** {
+ 406:stm32f429i_discovery_sdram.c ****   __IO uint32_t index = 0; 
+ 407:stm32f429i_discovery_sdram.c ****   for(index = (100000 * nCount); index != 0; index--)
+ 438              		.loc 1 407 0
+ 439 0026 44F24021 		movw	r1, #16960
+ 440              	.LVL48:
+ 441 002a C0F20F01 		movt	r1, 15
+ 442              	.LVL49:
+ 406:stm32f429i_discovery_sdram.c ****   __IO uint32_t index = 0; 
+ 443              		.loc 1 406 0
+ 444 002e 0194     		str	r4, [sp, #4]
+ 445              	.LVL50:
+ 446              		.loc 1 407 0
+ 447 0030 0191     		str	r1, [sp, #4]
+ 448 0032 019B     		ldr	r3, [sp, #4]
+ 449 0034 2BB1     		cbz	r3, .L6
+ 450              	.L11:
+ 451 0036 019A     		ldr	r2, [sp, #4]
+ 452 0038 501E     		subs	r0, r2, #1
+ 453              	.LVL51:
+ 454 003a 0190     		str	r0, [sp, #4]
+ 455              	.LVL52:
+ 456 003c 019C     		ldr	r4, [sp, #4]
+ 457 003e 002C     		cmp	r4, #0
+ 458 0040 F9D1     		bne	.L11
+ 459              	.LVL53:
+ 460              	.L6:
+ 461              	.LBE5:
+ 462              	.LBE4:
+ 274:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_PALL;
+ 463              		.loc 1 274 0
+ 464 0042 0221     		movs	r1, #2
+ 275:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 465              		.loc 1 275 0
+ 466 0044 0823     		movs	r3, #8
+ 276:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 467              		.loc 1 276 0
+ 468 0046 0122     		movs	r2, #1
+ 277:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+ 469              		.loc 1 277 0
+ 470 0048 0020     		movs	r0, #0
+ 274:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_PALL;
+ 471              		.loc 1 274 0
+ 472 004a 0291     		str	r1, [sp, #8]
+ 275:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 473              		.loc 1 275 0
+ 474 004c 0393     		str	r3, [sp, #12]
+ 276:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 475              		.loc 1 276 0
+ 476 004e 0492     		str	r2, [sp, #16]
+ 277:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+ 477              		.loc 1 277 0
+ 478 0050 0590     		str	r0, [sp, #20]
+ 479              	.L5:
+ 279:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 480              		.loc 1 279 0 discriminator 1
+ 481 0052 0120     		movs	r0, #1
+ 482 0054 2021     		movs	r1, #32
+ 483 0056 FFF7FEFF 		bl	FMC_GetFlagStatus
+ 484              	.LVL54:
+ 485 005a 0446     		mov	r4, r0
+ 486 005c 0028     		cmp	r0, #0
+ 487 005e F8D1     		bne	.L5
+ 283:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 488              		.loc 1 283 0
+ 489 0060 02A8     		add	r0, sp, #8
+ 490 0062 FFF7FEFF 		bl	FMC_SDRAMCmdConfig
+ 491              	.LVL55:
+ 287:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_AutoRefresh;
+ 492              		.loc 1 287 0
+ 493 0066 0321     		movs	r1, #3
+ 288:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 494              		.loc 1 288 0
+ 495 0068 0823     		movs	r3, #8
+ 289:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 4;
+ 496              		.loc 1 289 0
+ 497 006a 0422     		movs	r2, #4
+ 287:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_AutoRefresh;
+ 498              		.loc 1 287 0
+ 499 006c 0291     		str	r1, [sp, #8]
+ 288:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 500              		.loc 1 288 0
+ 501 006e 0393     		str	r3, [sp, #12]
+ 289:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 4;
+ 502              		.loc 1 289 0
+ 503 0070 0492     		str	r2, [sp, #16]
+ 290:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+ 504              		.loc 1 290 0
+ 505 0072 0594     		str	r4, [sp, #20]
+ 506              	.L7:
+ 292:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 507              		.loc 1 292 0 discriminator 1
+ 508 0074 0120     		movs	r0, #1
+ 509 0076 2021     		movs	r1, #32
+ 510 0078 FFF7FEFF 		bl	FMC_GetFlagStatus
+ 511              	.LVL56:
+ 512 007c 0028     		cmp	r0, #0
+ 513 007e F9D1     		bne	.L7
+ 296:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 514              		.loc 1 296 0
+ 515 0080 02A8     		add	r0, sp, #8
+ 516 0082 FFF7FEFF 		bl	FMC_SDRAMCmdConfig
+ 517              	.LVL57:
+ 518              	.L8:
+ 299:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 519              		.loc 1 299 0 discriminator 1
+ 520 0086 0120     		movs	r0, #1
+ 521 0088 2021     		movs	r1, #32
+ 522 008a FFF7FEFF 		bl	FMC_GetFlagStatus
+ 523              	.LVL58:
+ 524 008e 0028     		cmp	r0, #0
+ 525 0090 F9D1     		bne	.L8
+ 303:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 526              		.loc 1 303 0
+ 527 0092 02A8     		add	r0, sp, #8
+ 528 0094 FFF7FEFF 		bl	FMC_SDRAMCmdConfig
+ 529              	.LVL59:
+ 316:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 530              		.loc 1 316 0
+ 531 0098 0123     		movs	r3, #1
+ 314:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_LoadMode;
+ 532              		.loc 1 314 0
+ 533 009a 0420     		movs	r0, #4
+ 315:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 534              		.loc 1 315 0
+ 535 009c 0821     		movs	r1, #8
+ 317:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
+ 536              		.loc 1 317 0
+ 537 009e 03F50C72 		add	r2, r3, #560
+ 314:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_LoadMode;
+ 538              		.loc 1 314 0
+ 539 00a2 0290     		str	r0, [sp, #8]
+ 315:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+ 540              		.loc 1 315 0
+ 541 00a4 0391     		str	r1, [sp, #12]
+ 316:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+ 542              		.loc 1 316 0
+ 543 00a6 0493     		str	r3, [sp, #16]
+ 317:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
+ 544              		.loc 1 317 0
+ 545 00a8 0592     		str	r2, [sp, #20]
+ 546              	.L9:
+ 319:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 547              		.loc 1 319 0 discriminator 1
+ 548 00aa 0120     		movs	r0, #1
+ 549 00ac 2021     		movs	r1, #32
+ 550 00ae FFF7FEFF 		bl	FMC_GetFlagStatus
+ 551              	.LVL60:
+ 552 00b2 0028     		cmp	r0, #0
+ 553 00b4 F9D1     		bne	.L9
+ 323:stm32f429i_discovery_sdram.c ****   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+ 554              		.loc 1 323 0
+ 555 00b6 02A8     		add	r0, sp, #8
+ 556 00b8 FFF7FEFF 		bl	FMC_SDRAMCmdConfig
+ 557              	.LVL61:
+ 330:stm32f429i_discovery_sdram.c ****   FMC_SetRefreshCount(1386);
+ 558              		.loc 1 330 0
+ 559 00bc 40F26A50 		movw	r0, #1386
+ 560 00c0 FFF7FEFF 		bl	FMC_SetRefreshCount
+ 561              	.LVL62:
+ 562              	.L10:
+ 332:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 563              		.loc 1 332 0 discriminator 1
+ 564 00c4 0120     		movs	r0, #1
+ 565 00c6 2021     		movs	r1, #32
+ 566 00c8 FFF7FEFF 		bl	FMC_GetFlagStatus
+ 567              	.LVL63:
+ 568 00cc 0028     		cmp	r0, #0
+ 569 00ce F9D1     		bne	.L10
+ 335:stm32f429i_discovery_sdram.c **** }
+ 570              		.loc 1 335 0
+ 571 00d0 06B0     		add	sp, sp, #24
+ 572 00d2 10BD     		pop	{r4, pc}
+ 573              		.cfi_endproc
+ 574              	.LFE114:
+ 576 00d4 AFF30080 		.section	.text.SDRAM_Init,"ax",%progbits
+ 576      AFF30080 
+ 576      AFF30080 
+ 577              		.align	2
+ 578              		.p2align 4,,15
+ 579              		.global	SDRAM_Init
+ 580              		.thumb
+ 581              		.thumb_func
+ 583              	SDRAM_Init:
+ 584              	.LFB112:
+  66:stm32f429i_discovery_sdram.c **** {
+ 585              		.loc 1 66 0
+ 586              		.cfi_startproc
+ 587              		@ args = 0, pretend = 0, frame = 72
+ 588              		@ frame_needed = 0, uses_anonymous_args = 0
+ 589 0000 10B5     		push	{r4, lr}
+ 590              	.LCFI4:
+ 591              		.cfi_def_cfa_offset 8
+ 592              		.cfi_offset 4, -8
+ 593              		.cfi_offset 14, -4
+ 594 0002 92B0     		sub	sp, sp, #72
+ 595              	.LCFI5:
+ 596              		.cfi_def_cfa_offset 80
+  71:stm32f429i_discovery_sdram.c ****   SDRAM_GPIOConfig();
+ 597              		.loc 1 71 0
+ 598 0004 FFF7FEFF 		bl	SDRAM_GPIOConfig
+ 599              	.LVL64:
+  74:stm32f429i_discovery_sdram.c ****   RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FMC, ENABLE);
+ 600              		.loc 1 74 0
+ 601 0008 0120     		movs	r0, #1
+ 602 000a 0146     		mov	r1, r0
+ 603 000c FFF7FEFF 		bl	RCC_AHB3PeriphClockCmd
+ 604              	.LVL65:
+  82:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_ExitSelfRefreshDelay = 7;
+ 605              		.loc 1 82 0
+ 606 0010 0724     		movs	r4, #7
+  80:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay    = 2;      
+ 607              		.loc 1 80 0
+ 608 0012 0223     		movs	r3, #2
+  84:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime      = 4;
+ 609              		.loc 1 84 0
+ 610 0014 0421     		movs	r1, #4
+  82:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_ExitSelfRefreshDelay = 7;
+ 611              		.loc 1 82 0
+ 612 0016 8DE81800 		stmia	sp, {r3, r4}
+  84:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime      = 4;
+ 613              		.loc 1 84 0
+ 614 001a 0291     		str	r1, [sp, #8]
+  88:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime    = 2;      
+ 615              		.loc 1 88 0
+ 616 001c 0493     		str	r3, [sp, #16]
+  90:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_RPDelay              = 2;                
+ 617              		.loc 1 90 0
+ 618 001e 0593     		str	r3, [sp, #20]
+  92:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_RCDDelay             = 2;
+ 619              		.loc 1 92 0
+ 620 0020 0693     		str	r3, [sp, #24]
+  99:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_RowBitsNumber = FMC_RowBits_Number_12b;
+ 621              		.loc 1 99 0
+ 622 0022 0991     		str	r1, [sp, #36]
+  95:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_Bank = FMC_Bank2_SDRAM;
+ 623              		.loc 1 95 0
+ 624 0024 0123     		movs	r3, #1
+ 100:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDMemoryDataWidth = SDRAM_MEMORY_WIDTH;
+ 625              		.loc 1 100 0
+ 626 0026 1021     		movs	r1, #16
+  97:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ColumnBitsNumber = FMC_ColumnBits_Number_8b;
+ 627              		.loc 1 97 0
+ 628 0028 0022     		movs	r2, #0
+  95:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_Bank = FMC_Bank2_SDRAM;
+ 629              		.loc 1 95 0
+ 630 002a 0793     		str	r3, [sp, #28]
+ 100:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDMemoryDataWidth = SDRAM_MEMORY_WIDTH;
+ 631              		.loc 1 100 0
+ 632 002c 0A91     		str	r1, [sp, #40]
+ 101:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_InternalBankNumber = FMC_InternalBank_Number_4;
+ 633              		.loc 1 101 0
+ 634 002e 4023     		movs	r3, #64
+ 102:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_CASLatency = SDRAM_CAS_LATENCY; 
+ 635              		.loc 1 102 0
+ 636 0030 4FF4C071 		mov	r1, #384
+ 110:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInit(&FMC_SDRAMInitStructure); 
+ 637              		.loc 1 110 0
+ 638 0034 07A8     		add	r0, sp, #28
+  97:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ColumnBitsNumber = FMC_ColumnBits_Number_8b;
+ 639              		.loc 1 97 0
+ 640 0036 0892     		str	r2, [sp, #32]
+ 101:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_InternalBankNumber = FMC_InternalBank_Number_4;
+ 641              		.loc 1 101 0
+ 642 0038 0B93     		str	r3, [sp, #44]
+ 102:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_CASLatency = SDRAM_CAS_LATENCY; 
+ 643              		.loc 1 102 0
+ 644 003a 0C91     		str	r1, [sp, #48]
+ 104:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDClockPeriod = SDCLOCK_PERIOD;  
+ 645              		.loc 1 104 0
+ 646 003c 4FF40063 		mov	r3, #2048
+ 106:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ReadPipeDelay = FMC_ReadPipe_Delay_1;
+ 647              		.loc 1 106 0
+ 648 0040 4FF40051 		mov	r1, #8192
+ 103:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_WriteProtection = FMC_Write_Protection_Disable;
+ 649              		.loc 1 103 0
+ 650 0044 0D92     		str	r2, [sp, #52]
+ 105:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ReadBurst = SDRAM_READBURST;
+ 651              		.loc 1 105 0
+ 652 0046 0F92     		str	r2, [sp, #60]
+ 107:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDRAMTimingStruct = &FMC_SDRAMTimingInitStructure;
+ 653              		.loc 1 107 0
+ 654 0048 6A44     		add	r2, sp, r2
+ 104:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDClockPeriod = SDCLOCK_PERIOD;  
+ 655              		.loc 1 104 0
+ 656 004a 0E93     		str	r3, [sp, #56]
+ 106:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_ReadPipeDelay = FMC_ReadPipe_Delay_1;
+ 657              		.loc 1 106 0
+ 658 004c 1091     		str	r1, [sp, #64]
+ 107:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInitStructure.FMC_SDRAMTimingStruct = &FMC_SDRAMTimingInitStructure;
+ 659              		.loc 1 107 0
+ 660 004e 1192     		str	r2, [sp, #68]
+  86:stm32f429i_discovery_sdram.c ****   FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay        = 7;         
+ 661              		.loc 1 86 0
+ 662 0050 0394     		str	r4, [sp, #12]
+ 110:stm32f429i_discovery_sdram.c ****   FMC_SDRAMInit(&FMC_SDRAMInitStructure); 
+ 663              		.loc 1 110 0
+ 664 0052 FFF7FEFF 		bl	FMC_SDRAMInit
+ 665              	.LVL66:
+ 113:stm32f429i_discovery_sdram.c ****   SDRAM_InitSequence(); 
+ 666              		.loc 1 113 0
+ 667 0056 FFF7FEFF 		bl	SDRAM_InitSequence
+ 668              	.LVL67:
+ 115:stm32f429i_discovery_sdram.c **** }
+ 669              		.loc 1 115 0
+ 670 005a 12B0     		add	sp, sp, #72
+ 671 005c 10BD     		pop	{r4, pc}
+ 672              		.cfi_endproc
+ 673              	.LFE112:
+ 675 005e 00BF     		.section	.text.SDRAM_WriteBuffer,"ax",%progbits
+ 676              		.align	2
+ 677              		.p2align 4,,15
+ 678              		.global	SDRAM_WriteBuffer
+ 679              		.thumb
+ 680              		.thumb_func
+ 682              	SDRAM_WriteBuffer:
+ 683              	.LFB115:
+ 347:stm32f429i_discovery_sdram.c **** {
+ 684              		.loc 1 347 0
+ 685              		.cfi_startproc
+ 686              		@ args = 0, pretend = 0, frame = 8
+ 687              		@ frame_needed = 0, uses_anonymous_args = 0
+ 688              	.LVL68:
+ 689 0000 70B5     		push	{r4, r5, r6, lr}
+ 690              	.LCFI6:
+ 691              		.cfi_def_cfa_offset 16
+ 692              		.cfi_offset 4, -16
+ 693              		.cfi_offset 5, -12
+ 694              		.cfi_offset 6, -8
+ 695              		.cfi_offset 14, -4
+ 696 0002 82B0     		sub	sp, sp, #8
+ 697              	.LCFI7:
+ 698              		.cfi_def_cfa_offset 24
+ 347:stm32f429i_discovery_sdram.c **** {
+ 699              		.loc 1 347 0
+ 700 0004 0B46     		mov	r3, r1
+ 701 0006 0546     		mov	r5, r0
+ 351:stm32f429i_discovery_sdram.c ****   FMC_SDRAMWriteProtectionConfig(FMC_Bank2_SDRAM, DISABLE);
+ 702              		.loc 1 351 0
+ 703 0008 0021     		movs	r1, #0
+ 704              	.LVL69:
+ 705 000a 0120     		movs	r0, #1
+ 706              	.LVL70:
+ 347:stm32f429i_discovery_sdram.c **** {
+ 707              		.loc 1 347 0
+ 708 000c 1446     		mov	r4, r2
+ 348:stm32f429i_discovery_sdram.c ****   __IO uint32_t write_pointer = (uint32_t)uwWriteAddress;
+ 709              		.loc 1 348 0
+ 710 000e 0193     		str	r3, [sp, #4]
+ 711              	.LVL71:
+ 351:stm32f429i_discovery_sdram.c ****   FMC_SDRAMWriteProtectionConfig(FMC_Bank2_SDRAM, DISABLE);
+ 712              		.loc 1 351 0
+ 713 0010 FFF7FEFF 		bl	FMC_SDRAMWriteProtectionConfig
+ 714              	.LVL72:
+ 715              	.L22:
+ 354:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 716              		.loc 1 354 0 discriminator 1
+ 717 0014 0120     		movs	r0, #1
+ 718 0016 2021     		movs	r1, #32
+ 719 0018 FFF7FEFF 		bl	FMC_GetFlagStatus
+ 720              	.LVL73:
+ 721 001c 0028     		cmp	r0, #0
+ 722 001e F9D1     		bne	.L22
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 723              		.loc 1 359 0 discriminator 1
+ 724 0020 002C     		cmp	r4, #0
+ 725 0022 2FD0     		beq	.L21
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 726              		.loc 1 362 0
+ 727 0024 0199     		ldr	r1, [sp, #4]
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 728              		.loc 1 365 0
+ 729 0026 019A     		ldr	r2, [sp, #4]
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 730              		.loc 1 362 0
+ 731 0028 2846     		mov	r0, r5
+ 732 002a 013C     		subs	r4, r4, #1
+ 733              	.LVL74:
+ 734 002c 50F8045B 		ldr	r5, [r0], #4
+ 735              	.LVL75:
+ 736 0030 01F15041 		add	r1, r1, #-805306368
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 737              		.loc 1 365 0
+ 738 0034 0432     		adds	r2, r2, #4
+ 739              	.LVL76:
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 740              		.loc 1 359 0
+ 741 0036 2346     		mov	r3, r4
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 742              		.loc 1 362 0
+ 743 0038 0D60     		str	r5, [r1, #0]
+ 744 003a 04F00104 		and	r4, r4, #1
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 745              		.loc 1 365 0
+ 746 003e 0192     		str	r2, [sp, #4]
+ 747              	.LVL77:
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 748              		.loc 1 359 0
+ 749 0040 03B3     		cbz	r3, .L21
+ 750 0042 54B1     		cbz	r4, .L26
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 751              		.loc 1 362 0
+ 752 0044 0199     		ldr	r1, [sp, #4]
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 753              		.loc 1 365 0
+ 754 0046 019A     		ldr	r2, [sp, #4]
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 755              		.loc 1 362 0
+ 756 0048 50F8044B 		ldr	r4, [r0], #4
+ 757 004c 01F15041 		add	r1, r1, #-805306368
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 758              		.loc 1 365 0
+ 759 0050 0432     		adds	r2, r2, #4
+ 760              	.LVL78:
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 761              		.loc 1 359 0
+ 762 0052 013B     		subs	r3, r3, #1
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 763              		.loc 1 362 0
+ 764 0054 0C60     		str	r4, [r1, #0]
+ 765              	.LVL79:
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 766              		.loc 1 365 0
+ 767 0056 0192     		str	r2, [sp, #4]
+ 768              	.LVL80:
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 769              		.loc 1 359 0
+ 770 0058 14D0     		beq	.L21
+ 771              	.L26:
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 772              		.loc 1 362 0 discriminator 2
+ 773 005a 0199     		ldr	r1, [sp, #4]
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 774              		.loc 1 365 0 discriminator 2
+ 775 005c 019D     		ldr	r5, [sp, #4]
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 776              		.loc 1 362 0 discriminator 2
+ 777 005e 0246     		mov	r2, r0
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 778              		.loc 1 365 0 discriminator 2
+ 779 0060 2E1D     		adds	r6, r5, #4
+ 780              	.LVL81:
+ 781 0062 0196     		str	r6, [sp, #4]
+ 782              	.LVL82:
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 783              		.loc 1 362 0 discriminator 2
+ 784 0064 01F15041 		add	r1, r1, #-805306368
+ 785 0068 52F8046B 		ldr	r6, [r2], #4
+ 786              	.LVL83:
+ 787 006c 019C     		ldr	r4, [sp, #4]
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 788              		.loc 1 365 0 discriminator 2
+ 789 006e 019D     		ldr	r5, [sp, #4]
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 790              		.loc 1 362 0 discriminator 2
+ 791 0070 0E60     		str	r6, [r1, #0]
+ 792 0072 4168     		ldr	r1, [r0, #4]
+ 793 0074 04F15044 		add	r4, r4, #-805306368
+ 365:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 794              		.loc 1 365 0 discriminator 2
+ 795 0078 281D     		adds	r0, r5, #4
+ 796              	.LVL84:
+ 797 007a 0190     		str	r0, [sp, #4]
+ 798              	.LVL85:
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 799              		.loc 1 362 0 discriminator 2
+ 800 007c 101D     		adds	r0, r2, #4
+ 801              	.LVL86:
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 802              		.loc 1 359 0 discriminator 2
+ 803 007e 023B     		subs	r3, r3, #2
+ 362:stm32f429i_discovery_sdram.c ****     *(uint32_t *) (SDRAM_BANK_ADDR + write_pointer) = *pBuffer++;
+ 804              		.loc 1 362 0 discriminator 2
+ 805 0080 2160     		str	r1, [r4, #0]
+ 359:stm32f429i_discovery_sdram.c ****   for (; uwBufferSize != 0; uwBufferSize--) 
+ 806              		.loc 1 359 0 discriminator 2
+ 807 0082 EAD1     		bne	.L26
+ 808              	.L21:
+ 368:stm32f429i_discovery_sdram.c **** }
+ 809              		.loc 1 368 0
+ 810 0084 02B0     		add	sp, sp, #8
+ 811 0086 70BD     		pop	{r4, r5, r6, pc}
+ 812              		.cfi_endproc
+ 813              	.LFE115:
+ 815 0088 AFF30080 		.section	.text.SDRAM_ReadBuffer,"ax",%progbits
+ 815      AFF30080 
+ 816              		.align	2
+ 817              		.p2align 4,,15
+ 818              		.global	SDRAM_ReadBuffer
+ 819              		.thumb
+ 820              		.thumb_func
+ 822              	SDRAM_ReadBuffer:
+ 823              	.LFB116:
+ 379:stm32f429i_discovery_sdram.c **** {
+ 824              		.loc 1 379 0
+ 825              		.cfi_startproc
+ 826              		@ args = 0, pretend = 0, frame = 8
+ 827              		@ frame_needed = 0, uses_anonymous_args = 0
+ 828              	.LVL87:
+ 829 0000 30B5     		push	{r4, r5, lr}
+ 830              	.LCFI8:
+ 831              		.cfi_def_cfa_offset 12
+ 832              		.cfi_offset 4, -12
+ 833              		.cfi_offset 5, -8
+ 834              		.cfi_offset 14, -4
+ 835 0002 83B0     		sub	sp, sp, #12
+ 836              	.LCFI9:
+ 837              		.cfi_def_cfa_offset 24
+ 379:stm32f429i_discovery_sdram.c **** {
+ 838              		.loc 1 379 0
+ 839 0004 0546     		mov	r5, r0
+ 840 0006 1446     		mov	r4, r2
+ 380:stm32f429i_discovery_sdram.c ****   __IO uint32_t write_pointer = (uint32_t)uwReadAddress;
+ 841              		.loc 1 380 0
+ 842 0008 0191     		str	r1, [sp, #4]
+ 843              	.LVL88:
+ 844              	.L37:
+ 384:stm32f429i_discovery_sdram.c ****   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+ 845              		.loc 1 384 0 discriminator 1
+ 846 000a 0120     		movs	r0, #1
+ 847 000c 2021     		movs	r1, #32
+ 848 000e FFF7FEFF 		bl	FMC_GetFlagStatus
+ 849              	.LVL89:
+ 850 0012 0028     		cmp	r0, #0
+ 851 0014 F9D1     		bne	.L37
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 852              		.loc 1 389 0 discriminator 1
+ 853 0016 002C     		cmp	r4, #0
+ 854 0018 2FD0     		beq	.L36
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 855              		.loc 1 391 0
+ 856 001a 019B     		ldr	r3, [sp, #4]
+ 857 001c 03F15040 		add	r0, r3, #-805306368
+ 858 0020 013C     		subs	r4, r4, #1
+ 859              	.LVL90:
+ 860 0022 0168     		ldr	r1, [r0, #0]
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 861              		.loc 1 394 0
+ 862 0024 019A     		ldr	r2, [sp, #4]
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 863              		.loc 1 391 0
+ 864 0026 2846     		mov	r0, r5
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 865              		.loc 1 394 0
+ 866 0028 0432     		adds	r2, r2, #4
+ 867              	.LVL91:
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 868              		.loc 1 389 0
+ 869 002a 2346     		mov	r3, r4
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 870              		.loc 1 391 0
+ 871 002c 40F8041B 		str	r1, [r0], #4
+ 872 0030 04F00104 		and	r4, r4, #1
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 873              		.loc 1 394 0
+ 874 0034 0192     		str	r2, [sp, #4]
+ 875              	.LVL92:
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 876              		.loc 1 389 0
+ 877 0036 03B3     		cbz	r3, .L36
+ 878 0038 54B1     		cbz	r4, .L41
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 879              		.loc 1 391 0
+ 880 003a 0199     		ldr	r1, [sp, #4]
+ 881 003c 01F15042 		add	r2, r1, #-805306368
+ 882 0040 1168     		ldr	r1, [r2, #0]
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 883              		.loc 1 394 0
+ 884 0042 019A     		ldr	r2, [sp, #4]
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 885              		.loc 1 391 0
+ 886 0044 40F8041B 		str	r1, [r0], #4
+ 887              	.LVL93:
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 888              		.loc 1 394 0
+ 889 0048 111D     		adds	r1, r2, #4
+ 890              	.LVL94:
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 891              		.loc 1 389 0
+ 892 004a 013B     		subs	r3, r3, #1
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 893              		.loc 1 394 0
+ 894 004c 0191     		str	r1, [sp, #4]
+ 895              	.LVL95:
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 896              		.loc 1 389 0
+ 897 004e 14D0     		beq	.L36
+ 898              	.LVL96:
+ 899              	.L41:
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 900              		.loc 1 391 0 discriminator 2
+ 901 0050 019C     		ldr	r4, [sp, #4]
+ 902 0052 04F15041 		add	r1, r4, #-805306368
+ 903 0056 0246     		mov	r2, r0
+ 904 0058 0C68     		ldr	r4, [r1, #0]
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 905              		.loc 1 394 0 discriminator 2
+ 906 005a 0199     		ldr	r1, [sp, #4]
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 907              		.loc 1 391 0 discriminator 2
+ 908 005c 42F8044B 		str	r4, [r2], #4
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 909              		.loc 1 394 0 discriminator 2
+ 910 0060 0C1D     		adds	r4, r1, #4
+ 911              	.LVL97:
+ 912 0062 0194     		str	r4, [sp, #4]
+ 913              	.LVL98:
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 914              		.loc 1 391 0 discriminator 2
+ 915 0064 0199     		ldr	r1, [sp, #4]
+ 916 0066 01F15044 		add	r4, r1, #-805306368
+ 917              	.LVL99:
+ 918 006a 2168     		ldr	r1, [r4, #0]
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 919              		.loc 1 394 0 discriminator 2
+ 920 006c 019C     		ldr	r4, [sp, #4]
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 921              		.loc 1 391 0 discriminator 2
+ 922 006e 4160     		str	r1, [r0, #4]
+ 394:stm32f429i_discovery_sdram.c ****     write_pointer += 4;
+ 923              		.loc 1 394 0 discriminator 2
+ 924 0070 201D     		adds	r0, r4, #4
+ 925              	.LVL100:
+ 926 0072 0190     		str	r0, [sp, #4]
+ 927              	.LVL101:
+ 391:stm32f429i_discovery_sdram.c ****    *pBuffer++ = *(__IO uint32_t *)(SDRAM_BANK_ADDR + write_pointer );
+ 928              		.loc 1 391 0 discriminator 2
+ 929 0074 101D     		adds	r0, r2, #4
+ 930              	.LVL102:
+ 389:stm32f429i_discovery_sdram.c ****   for(; uwBufferSize != 0x00; uwBufferSize--)
+ 931              		.loc 1 389 0 discriminator 2
+ 932 0076 023B     		subs	r3, r3, #2
+ 933 0078 EAD1     		bne	.L41
+ 934              	.L36:
+ 396:stm32f429i_discovery_sdram.c **** }
+ 935              		.loc 1 396 0
+ 936 007a 03B0     		add	sp, sp, #12
+ 937 007c 30BD     		pop	{r4, r5, pc}
+ 938              		.cfi_endproc
+ 939              	.LFE116:
+ 941 007e 00BF     		.text
+ 942              	.Letext0:
+ 943              		.file 2 "/home/pedro/gcc-arm-none-eabi-4_7-2013q3/bin/../lib/gcc/arm-none-eabi/4.7.4/include/stdin
+ 944              		.file 3 "core/stm32f4xx.h"
+ 945              		.file 4 "STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_fmc.h"
+ 946              		.file 5 "STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h"
+ 947              		.file 6 "STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rcc.h"
+ 948              		.file 7 "core/core_cm4.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32f429i_discovery_sdram.c
+     /tmp/ccQcp86I.s:21     .text.SDRAM_GPIOConfig:00000000 $t
+     /tmp/ccQcp86I.s:27     .text.SDRAM_GPIOConfig:00000000 SDRAM_GPIOConfig
+     /tmp/ccQcp86I.s:388    .text.SDRAM_InitSequence:00000000 $t
+     /tmp/ccQcp86I.s:394    .text.SDRAM_InitSequence:00000000 SDRAM_InitSequence
+     /tmp/ccQcp86I.s:577    .text.SDRAM_Init:00000000 $t
+     /tmp/ccQcp86I.s:583    .text.SDRAM_Init:00000000 SDRAM_Init
+     /tmp/ccQcp86I.s:676    .text.SDRAM_WriteBuffer:00000000 $t
+     /tmp/ccQcp86I.s:682    .text.SDRAM_WriteBuffer:00000000 SDRAM_WriteBuffer
+     /tmp/ccQcp86I.s:816    .text.SDRAM_ReadBuffer:00000000 $t
+     /tmp/ccQcp86I.s:822    .text.SDRAM_ReadBuffer:00000000 SDRAM_ReadBuffer
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+RCC_AHB1PeriphClockCmd
+GPIO_PinAFConfig
+GPIO_Init
+FMC_GetFlagStatus
+FMC_SDRAMCmdConfig
+FMC_SetRefreshCount
+RCC_AHB3PeriphClockCmd
+FMC_SDRAMInit
+FMC_SDRAMWriteProtectionConfig

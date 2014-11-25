@@ -1,0 +1,315 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"mallocext.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.sbrk_ext,"ax",%progbits
+  21              		.align	2
+  22              		.p2align 4,,15
+  23              		.global	sbrk_ext
+  24              		.thumb
+  25              		.thumb_func
+  27              	sbrk_ext:
+  28              	.LFB112:
+  29              		.file 1 "core/mallocext.c"
+   1:core/mallocext.c **** #include "stm32f4xx.h"
+   2:core/mallocext.c **** #include <sys/types.h>
+   3:core/mallocext.c **** #include <errno.h>
+   4:core/mallocext.c **** 
+   5:core/mallocext.c **** caddr_t sbrk_ext(int incr) {
+  30              		.loc 1 5 0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              	.LVL0:
+   6:core/mallocext.c **** 
+   7:core/mallocext.c **** 	static char *heap_end;
+   8:core/mallocext.c **** 	char *prev_heap_end;
+   9:core/mallocext.c **** 
+  10:core/mallocext.c **** 	if (heap_end == 0) {
+  35              		.loc 1 10 0
+  36 0000 0B4A     		ldr	r2, .L8
+   5:core/mallocext.c **** caddr_t sbrk_ext(int incr) {
+  37              		.loc 1 5 0
+  38 0002 08B5     		push	{r3, lr}
+  39              	.LCFI0:
+  40              		.cfi_def_cfa_offset 8
+  41              		.cfi_offset 3, -8
+  42              		.cfi_offset 14, -4
+  43              		.loc 1 10 0
+  44 0004 1368     		ldr	r3, [r2, #0]
+  45 0006 73B1     		cbz	r3, .L6
+  46              	.L2:
+  47              	.LVL1:
+  11:core/mallocext.c **** 		heap_end = (char*)0xD0000000;
+  12:core/mallocext.c **** 	}
+  13:core/mallocext.c **** 	prev_heap_end = heap_end;
+  14:core/mallocext.c **** 
+  15:core/mallocext.c **** 	//todo: check consumtion
+  16:core/mallocext.c **** 	//char * stack = (char*) __get_MSP();
+  17:core/mallocext.c **** 	if (heap_end + incr >  (char*)0xD0400000)
+  48              		.loc 1 17 0
+  49 0008 1818     		adds	r0, r3, r0
+  50              	.LVL2:
+  51 000a 10F13F5F 		cmn	r0, #801112064
+  52 000e 02D8     		bhi	.L7
+  18:core/mallocext.c **** 	{
+  19:core/mallocext.c **** 		//_write (STDERR_FILENO, "Heap and stack collision\n", 25);
+  20:core/mallocext.c **** 		errno = ENOMEM;
+  21:core/mallocext.c **** 		return  (caddr_t) -1;
+  22:core/mallocext.c **** 		//abort ();
+  23:core/mallocext.c **** 	}
+  24:core/mallocext.c **** 
+  25:core/mallocext.c **** 	heap_end += incr;
+  53              		.loc 1 25 0
+  54 0010 1060     		str	r0, [r2, #0]
+  26:core/mallocext.c **** 	return (caddr_t) prev_heap_end;
+  27:core/mallocext.c **** 
+  28:core/mallocext.c **** }
+  55              		.loc 1 28 0
+  56 0012 1846     		mov	r0, r3
+  57 0014 08BD     		pop	{r3, pc}
+  58              	.L7:
+  20:core/mallocext.c **** 		errno = ENOMEM;
+  59              		.loc 1 20 0
+  60 0016 FFF7FEFF 		bl	__errno
+  61              	.LVL3:
+  62 001a 0C21     		movs	r1, #12
+  21:core/mallocext.c **** 		return  (caddr_t) -1;
+  63              		.loc 1 21 0
+  64 001c 4FF0FF33 		mov	r3, #-1
+  20:core/mallocext.c **** 		errno = ENOMEM;
+  65              		.loc 1 20 0
+  66 0020 0160     		str	r1, [r0, #0]
+  67              		.loc 1 28 0
+  68 0022 1846     		mov	r0, r3
+  69 0024 08BD     		pop	{r3, pc}
+  70              	.LVL4:
+  71              	.L6:
+  11:core/mallocext.c **** 		heap_end = (char*)0xD0000000;
+  72              		.loc 1 11 0
+  73 0026 4FF05043 		mov	r3, #-805306368
+  74 002a 1360     		str	r3, [r2, #0]
+  75 002c ECE7     		b	.L2
+  76              	.L9:
+  77 002e 00BF     		.align	2
+  78              	.L8:
+  79 0030 00000000 		.word	.LANCHOR0
+  80              		.cfi_endproc
+  81              	.LFE112:
+  83 0034 AFF30080 		.section	.text.malloc_ext,"ax",%progbits
+  83      AFF30080 
+  83      AFF30080 
+  84              		.align	2
+  85              		.p2align 4,,15
+  86              		.global	malloc_ext
+  87              		.thumb
+  88              		.thumb_func
+  90              	malloc_ext:
+  91              	.LFB113:
+  29:core/mallocext.c **** 
+  30:core/mallocext.c **** typedef struct free_block {
+  31:core/mallocext.c **** 	size_t size;
+  32:core/mallocext.c **** 	struct free_block* next;
+  33:core/mallocext.c **** } free_block;
+  34:core/mallocext.c **** 
+  35:core/mallocext.c **** static free_block free_block_list_head = { 0, 0 };
+  36:core/mallocext.c **** 
+  37:core/mallocext.c **** static const size_t align_to = 16;
+  38:core/mallocext.c **** 
+  39:core/mallocext.c **** void* malloc_ext(size_t size) {
+  92              		.loc 1 39 0
+  93              		.cfi_startproc
+  94              		@ args = 0, pretend = 0, frame = 0
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96              	.LVL5:
+  97 0000 10B5     		push	{r4, lr}
+  98              	.LCFI1:
+  99              		.cfi_def_cfa_offset 8
+ 100              		.cfi_offset 4, -8
+ 101              		.cfi_offset 14, -4
+  40:core/mallocext.c **** 	size = (size + sizeof(free_block) + (align_to - 1)) & ~ (align_to - 1);
+  41:core/mallocext.c **** 	free_block* block = free_block_list_head.next;
+ 102              		.loc 1 41 0
+ 103 0002 1049     		ldr	r1, .L26
+ 104 0004 4B68     		ldr	r3, [r1, #4]
+  40:core/mallocext.c **** 	size = (size + sizeof(free_block) + (align_to - 1)) & ~ (align_to - 1);
+ 105              		.loc 1 40 0
+ 106 0006 1730     		adds	r0, r0, #23
+ 107              	.LVL6:
+ 108 0008 20F00F04 		bic	r4, r0, #15
+ 109              	.LVL7:
+  42:core/mallocext.c **** 	free_block** head = &(free_block_list_head.next);
+  43:core/mallocext.c **** 	while (block != 0) {
+ 110              		.loc 1 43 0
+ 111 000c 53B1     		cbz	r3, .L11
+  44:core/mallocext.c **** 		if (block->size >= size) {
+ 112              		.loc 1 44 0
+ 113 000e 1A68     		ldr	r2, [r3, #0]	@ unaligned
+ 114 0010 9442     		cmp	r4, r2
+ 115 0012 04D8     		bhi	.L22
+ 116 0014 12E0     		b	.L25
+ 117              	.LVL8:
+ 118              	.L16:
+ 119 0016 0168     		ldr	r1, [r0, #0]	@ unaligned
+ 120 0018 8C42     		cmp	r4, r1
+ 121 001a 09D9     		bls	.L24
+ 122 001c 5B68     		ldr	r3, [r3, #4]	@ unaligned
+ 123              	.LVL9:
+ 124              	.L22:
+  45:core/mallocext.c **** 			*head = block->next;
+  46:core/mallocext.c **** 			return ((char*)block) + sizeof(free_block);
+  47:core/mallocext.c **** 		}
+  48:core/mallocext.c **** 		head = &(block->next);
+  49:core/mallocext.c **** 		block = block->next;
+ 125              		.loc 1 49 0
+ 126 001e 5868     		ldr	r0, [r3, #4]	@ unaligned
+ 127              	.LVL10:
+  43:core/mallocext.c **** 	while (block != 0) {
+ 128              		.loc 1 43 0
+ 129 0020 0028     		cmp	r0, #0
+ 130 0022 F8D1     		bne	.L16
+ 131              	.LVL11:
+ 132              	.L11:
+  50:core/mallocext.c **** 	}
+  51:core/mallocext.c **** 
+  52:core/mallocext.c **** 	block = (free_block*)sbrk_ext(size);
+ 133              		.loc 1 52 0
+ 134 0024 2046     		mov	r0, r4
+ 135 0026 FFF7FEFF 		bl	sbrk_ext
+ 136              	.LVL12:
+  53:core/mallocext.c **** 	block->size = size;
+ 137              		.loc 1 53 0
+ 138 002a 40F8084B 		str	r4, [r0], #8	@ unaligned
+ 139              	.LVL13:
+  54:core/mallocext.c **** 
+  55:core/mallocext.c **** 	return ((char*)block) + sizeof(free_block);
+  56:core/mallocext.c **** }
+ 140              		.loc 1 56 0
+ 141 002e 10BD     		pop	{r4, pc}
+ 142              	.LVL14:
+ 143              	.L24:
+  48:core/mallocext.c **** 		head = &(block->next);
+ 144              		.loc 1 48 0
+ 145 0030 1A1D     		adds	r2, r3, #4
+ 146              	.LVL15:
+ 147              	.L12:
+  45:core/mallocext.c **** 			*head = block->next;
+ 148              		.loc 1 45 0
+ 149 0032 4468     		ldr	r4, [r0, #4]	@ unaligned
+ 150              	.LVL16:
+  46:core/mallocext.c **** 			return ((char*)block) + sizeof(free_block);
+ 151              		.loc 1 46 0
+ 152 0034 00F10800 		add	r0, r0, #8
+ 153              	.LVL17:
+  45:core/mallocext.c **** 			*head = block->next;
+ 154              		.loc 1 45 0
+ 155 0038 1460     		str	r4, [r2, #0]
+  46:core/mallocext.c **** 			return ((char*)block) + sizeof(free_block);
+ 156              		.loc 1 46 0
+ 157 003a 10BD     		pop	{r4, pc}
+ 158              	.LVL18:
+ 159              	.L25:
+  44:core/mallocext.c **** 		if (block->size >= size) {
+ 160              		.loc 1 44 0
+ 161 003c 1846     		mov	r0, r3
+  42:core/mallocext.c **** 	free_block** head = &(free_block_list_head.next);
+ 162              		.loc 1 42 0
+ 163 003e 0A1D     		adds	r2, r1, #4
+ 164 0040 F7E7     		b	.L12
+ 165              	.L27:
+ 166 0042 00BF     		.align	2
+ 167              	.L26:
+ 168 0044 00000000 		.word	.LANCHOR1
+ 169              		.cfi_endproc
+ 170              	.LFE113:
+ 172              		.section	.text.free_ext,"ax",%progbits
+ 173              		.align	2
+ 174              		.p2align 4,,15
+ 175              		.global	free_ext
+ 176              		.thumb
+ 177              		.thumb_func
+ 179              	free_ext:
+ 180              	.LFB114:
+  57:core/mallocext.c **** 
+  58:core/mallocext.c **** void free_ext(void* ptr) {
+ 181              		.loc 1 58 0
+ 182              		.cfi_startproc
+ 183              		@ args = 0, pretend = 0, frame = 0
+ 184              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185              		@ link register save eliminated.
+ 186              	.LVL19:
+  59:core/mallocext.c **** 	free_block* block = (free_block*)(((char*)ptr) - sizeof(free_block ));
+  60:core/mallocext.c **** 	block->next = free_block_list_head.next;
+ 187              		.loc 1 60 0
+ 188 0000 40F20003 		movw	r3, #:lower16:.LANCHOR1
+ 189 0004 C0F20003 		movt	r3, #:upper16:.LANCHOR1
+ 190              	.LVL20:
+  59:core/mallocext.c **** 	free_block* block = (free_block*)(((char*)ptr) - sizeof(free_block ));
+ 191              		.loc 1 59 0
+ 192 0008 A0F10801 		sub	r1, r0, #8
+ 193              	.LVL21:
+ 194              		.loc 1 60 0
+ 195 000c 5A68     		ldr	r2, [r3, #4]
+ 196 000e 40F8042C 		str	r2, [r0, #-4]	@ unaligned
+  61:core/mallocext.c **** 	free_block_list_head.next = block;
+ 197              		.loc 1 61 0
+ 198 0012 5960     		str	r1, [r3, #4]
+ 199 0014 7047     		bx	lr
+ 200              		.cfi_endproc
+ 201              	.LFE114:
+ 203 0016 00BFAFF3 		.section	.bss.heap_end.7790,"aw",%nobits
+ 203      0080AFF3 
+ 203      0080
+ 204              		.align	2
+ 205              		.set	.LANCHOR0,. + 0
+ 208              	heap_end.7790:
+ 209 0000 00000000 		.space	4
+ 210              		.section	.bss.free_block_list_head,"aw",%nobits
+ 211              		.align	2
+ 212              		.set	.LANCHOR1,. + 0
+ 215              	free_block_list_head:
+ 216 0000 00000000 		.space	8
+ 216      00000000 
+ 217              		.text
+ 218              	.Letext0:
+ 219              		.file 2 "/home/pedro/gcc-arm-none-eabi-4_7-2013q3/bin/../lib/gcc/arm-none-eabi/4.7.4/include/stdin
+ 220              		.file 3 "/home/pedro/gcc-arm-none-eabi-4_7-2013q3/bin/../lib/gcc/arm-none-eabi/4.7.4/include/stdde
+ 221              		.file 4 "/home/pedro/gcc-arm-none-eabi-4_7-2013q3/bin/../lib/gcc/arm-none-eabi/4.7.4/../../../../a
+ 222              		.file 5 "core/core_cm4.h"
+ 223              		.file 6 "/home/pedro/gcc-arm-none-eabi-4_7-2013q3/bin/../lib/gcc/arm-none-eabi/4.7.4/../../../../a
+DEFINED SYMBOLS
+                            *ABS*:00000000 mallocext.c
+     /tmp/ccrABumM.s:21     .text.sbrk_ext:00000000 $t
+     /tmp/ccrABumM.s:27     .text.sbrk_ext:00000000 sbrk_ext
+     /tmp/ccrABumM.s:79     .text.sbrk_ext:00000030 $d
+     /tmp/ccrABumM.s:84     .text.malloc_ext:00000000 $t
+     /tmp/ccrABumM.s:90     .text.malloc_ext:00000000 malloc_ext
+     /tmp/ccrABumM.s:168    .text.malloc_ext:00000044 $d
+     /tmp/ccrABumM.s:173    .text.free_ext:00000000 $t
+     /tmp/ccrABumM.s:179    .text.free_ext:00000000 free_ext
+     /tmp/ccrABumM.s:212    .bss.free_block_list_head:00000000 .LANCHOR1
+     /tmp/ccrABumM.s:204    .bss.heap_end.7790:00000000 $d
+     /tmp/ccrABumM.s:208    .bss.heap_end.7790:00000000 heap_end.7790
+     /tmp/ccrABumM.s:211    .bss.free_block_list_head:00000000 $d
+     /tmp/ccrABumM.s:215    .bss.free_block_list_head:00000000 free_block_list_head
+                     .debug_frame:00000010 $d
+     /tmp/ccrABumM.s:83     .text.sbrk_ext:00000034 $t
+     /tmp/ccrABumM.s:1053   .text.malloc_ext:00000048 $t
+
+UNDEFINED SYMBOLS
+__errno
