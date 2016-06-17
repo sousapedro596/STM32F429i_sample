@@ -8,7 +8,7 @@
 	Inspired by this repo:
 		https://github.com/sebseb7/stm32f429-template.git 	by sebseb7 
 
-	Please, if some of your code is there without a mention, send me a email!
+	If some of your code is in this repo without mention, email me!
 */
 #include "main.h"
 #include <stdlib.h>
@@ -32,7 +32,7 @@
 #include "libs/mcugui/text.h"
 
 /*
-	Nice trygonometry func for quick (not most precise) calc	
+	Nice trygonometry func for quick (not most precise...) calc	
 */
 #include "libs/armmath.h"
 
